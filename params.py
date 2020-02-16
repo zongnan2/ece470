@@ -4,7 +4,7 @@ import time
 
 gravity = -9.81
 
-max_velocity_hist = 20
+max_velocity_hist = 10
 
 #BALL
 ball_base_x = 0
