@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import params
 
 def test():
 
@@ -43,8 +44,8 @@ def find_velocity(time, pos, accel):
 if __name__ == '__main__':
 
     time = np.linspace(0, 2, 100)
-    y = 10*time -4.9*(time**2)
+    y = 10*time *.5*params.gravity*(time**2)
 
     get_weights(10)
 
-    print (find_velocity(time[:10], y[:10], -9.81))
+    print (find_velocity(time[:10], y[:10], params.gravity))

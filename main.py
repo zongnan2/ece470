@@ -13,9 +13,7 @@ while Ball.y >= 0:
 
     #update the balls height and velocity
 
-    time.sleep(0.005)
     Ball.move()
-    time.sleep(0.005)
 
 
 print (Ball.y_history)

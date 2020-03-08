@@ -75,6 +75,8 @@ class Ball:
         relevant_time = self.time_steps[ self.time_steps > self.last_shot ]
         return min(len(relevant_time), params.max_velocity_hist )
 
+
+
     def get_ball_height():
 
         ##from sensor
