@@ -5,10 +5,18 @@ from scipy.linalg import expm
 def skew_semetric(w):
 
     grid = np.zeros((3,3))
-
-    grid[0] = [0, -1*w[2][0], w[1][0] ]
-    grid[1] = [w[2][0], 0, -w[0][0]   ]
-    grid[2] = [-1*w[1][0], w[0][0], 0 ]
+    try:
+        grid[0] = [0, -1*w[2][0], w[1][0] ]
+    except:
+        grid[0] = [0, -1*w[2], w[1] ]
+    try:
+        grid[1] = [w[2][0], 0, -w[0][0]   ]
+    except:
+        grid[1] = [w[2], 0, -w[0]   ]
+    try:
+        grid[2] = [-1*w[1][0], w[0][0], 0 ]
+    except:
+        grid[2] = [-1*w[1], w[0], 0 ]
 
     return grid
 
@@ -21,9 +29,20 @@ def screw_bracket(screw):
 
     brack_s = np.zeros((4,4))
     brack_s[ :3, :3] = skew_sem_om
-    brack_s[ 0, 3] = nu[0][0]
-    brack_s[ 1, 3] = nu[1][0]
-    brack_s[ 2, 3] = nu[2][0]
+    try:
+        brack_s[ 0, 3] = nu[0][0]
+    except:
+        brack_s[ 0, 3] = nu[0]
+
+    try:
+        brack_s[ 1, 3] = nu[1][0]
+    except:
+        brack_s[ 1, 3] = nu[1]
+
+    try:
+        brack_s[ 2, 3] = nu[2][0]
+    except:
+        brack_s[ 2, 3] = nu[2]
 
     return brack_s
 
@@ -32,6 +51,9 @@ def mat_exp(mat):
 
 def mat_mult(a,b):
     return np.matmul(a,b)
+
+def deg_to_rad(deg):
+    return np.radians(deg)
 
 def calculate_trans_matrix(screws, thetas, M):
 
@@ -64,3 +86,15 @@ def get_screws_mats(omegas, qs_or_vs, rot_joints):
 
         screws.append(screw)
     return screws
+
+def sep_screws_to_one_mat(sep_screws):
+
+    screw = np.zeros((6,len(sep_screws)))
+
+    for i in range(len(sep_screws)):
+        curr_screw = sep_screws[i]
+        for j in range(6):
+
+            screw[j,i] = curr_screw[j][0]
+
+    return screw

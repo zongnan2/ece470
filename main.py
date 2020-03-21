@@ -1,24 +1,24 @@
 import time
 import ball
-import bat
+import arm
 import params
+import support_functions as sf
 
-#initilize class
-Ball = ball.Ball()
+'''
+to show kinematics -> kinematics_test.py
+use keys 1,2,3,4 to rotate joints
+'''
 
-#shoot the ball vertically upward
-Ball.shoot()
-
-while Ball.y >= 0:
-
-    #update the balls height and velocity
-
-    Ball.move()
+screw = sf.get_screws_mats(params.omegas, params.qs_or_vs, params.rot_joints)
+screw = sf.sep_screws_to_one_mat(screw)
 
 
-print (Ball.y_history)
+robot = arm.Robot(params.Ms, screw)
+time.sleep(1)
+robot.change_theta( sf.deg_to_rad(90), 1 )
+time.sleep(1)
 
-import matplotlib.pyplot as plt
 
-plt.scatter(Ball.time_steps, Ball.y_history)
-plt.show()
+
+
+print ()
