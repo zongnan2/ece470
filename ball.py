@@ -1,86 +1,66 @@
 import params
-import smart_velocity_finder
+import smart_velocity_finder as svf
 import numpy as np
 import time
+import pygame_help as ph
+import math
+import sys
 
 class Ball:
 
-    def __init__(self, mode = 'simulation'):
+    def __init__(self, coords, tilt):
 
-        self.base_x = params.ball_base_x
-        self.base_y = params.ball_base_y
-        self.base_z = params.ball_base_z
-        self.radius = params.ball_radius
+        self.coords = coords
 
-        self.y = self.base_y
-        self.vy = 0
-        self.gy = params.gravity
+        self.v = 6
+        self.tilt = tilt
 
-        self.mode = mode
-        self.last_shot = 0
+        self.vp1 = self.v * math.cos(self.tilt)
+        self.vp2 = self.v * math.sin(self.tilt)
 
-        self.time_steps = np.array([ time.time()])
-        self.y_history = np.array([ self.vy ])
+        self.radius = 5
+        self.color = params.ball_color
 
+        self.v1s = []
+        self.v2s = []
+        self.x1s = []
+        self.x2s = []
 
-        pass
-
-    def shoot(self):
-
-        if self.mode == 'simulation':
-            self.vy = params.ball_v0
-
-        if self.mode == 'real':
-
-            #not yet connected or built
-            #send shooting signal to the module
-            pass
-
-        self.last_shot = time.time()
-
-    def move(self):
-
-        ct = time.time()
-        self.time_steps = np.append(self.time_steps, ct)
-        dt = self.time_steps[-1] - self.time_steps[-2]
-
-        if self.mode == 'simulation':
-            y = self.y + self.vy*dt + 0.5*self.gy*dt**2
-
-        if self.mode == 'real':
-            y = self.get_ball_height()
-
-        if y < 0:
-            y = 0
-
-        self.y_history = np.append(self.y_history, y)
-        self.y = y
-
-        if y > 0:
-            self.update()
-
-        else:
-            self.vy = 0
+    def draw(self, screen):
+        ph.draw_circle(screen, self.color, ph.world_coord_to_pixel_coord(self.coords), self.radius)
 
     def update(self):
+        self.vp2 = self.vp2 + params.g * params.dt_sec
+        self.coords[1] = self.coords[1] + self.vp2*params.dt_sec + .5*params.g*params.dt_sec**2
+        self.coords[0] = self.coords[0] + self.vp1*params.dt_sec
 
-        n = self.steps_since_shot()
-        if n >= 2:
-            self.vy = smart_velocity_finder.find_velocity( self.time_steps[-(n):], self.y_history[-(n):], self.gy )
-
-    def steps_since_shot(self):
-
-        #gets the relevant time history
-
-        relevant_time = self.time_steps[ self.time_steps > self.last_shot ]
-        return min(len(relevant_time), params.max_velocity_hist )
+        self.v1s = svf.add_to_front(self.vp1, self.v1s)
+        self.v2s = svf.add_to_front(self.vp2, self.v2s)
+        self.x1s = svf.add_to_front(self.coords[0], self.x1s)
+        self.x2s = svf.add_to_front(self.coords[1], self.x2s)
 
 
+        if len(self.x1s) > int(params.max_velocity_hist/4):
+            self.find_time_pos_of_peak()
+            return True
 
-    def get_ball_height():
+        return False
 
-        ##from sensor
-        return 1
+    def find_time_pos_of_peak(self):
+
+        dv = self.v2s[-1] - self.v2s[0]
+        dt = params.dt_sec * (len(self.v2s) - 1)
+
+        v_per_s = dv / dt
+
+        time_from_now = self.v2s[0] / v_per_s
+
+        x_pos = self.x1s[0] + (self.v1s[0] * time_from_now)
+        y_pos = self.x2s[0] + (self.v2s[0] * time_from_now + .5*params.g*time_from_now**2)
+
+        self.x_peak = x_pos
+        self.y_peak = y_pos
+        self.t_peak = time_from_now + time.time()
 
 
 

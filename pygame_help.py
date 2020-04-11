@@ -60,8 +60,6 @@ def world_coord_to_pixel_coord(coords):
 
 def draw_robot(screen, joints_coords):
 
-    fill_screen(screen, params.background_color )
-
     for i in range(1, len(joints_coords)):
 
         start = world_coord_to_pixel_coord( joints_coords[i-1])

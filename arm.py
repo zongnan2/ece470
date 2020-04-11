@@ -4,12 +4,14 @@ import params
 import get_transformation_matrix as gtm
 import support_functions as sf
 
+from modern_robotics import *
+
 class Robot:
 
     def __init__(self, Ms, screw, show_screen = True):
 
-        self.Ms = Ms
-        self.M = Ms[-1]
+        self.Ms = Ms.copy()
+        self.M = Ms[-1].copy()
         self.screw = screw
         self.n = len(screw[0])
         self.thetas = np.zeros(self.n)
@@ -18,8 +20,9 @@ class Robot:
         self.get_world_coords()
 
         self.show_screen = show_screen
-        if self.show_screen:
-            self.screen = ph.get_screen(params.length, params.width)
+
+        for i in self.Ts:
+            print (i)
 
     def print_info(self):
 
@@ -83,9 +86,8 @@ class Robot:
             d_theta = sf.deg_to_rad(d_theta)
 
         self.thetas[theta_ind] = self.thetas[theta_ind] + d_theta
-        print (self.thetas)
 
-    def draw_links(self, plane1 = 'Y', plane2 = 'Z'):
+    def draw_links(self, screen, plane1 = 'Y', plane2 = 'Z'):
 
         planes = [ 'X','Y','Z']
         plane1_ind = planes.index(plane1)
@@ -93,14 +95,46 @@ class Robot:
 
         joints = [ [0,0] ]
 
-        print (self.coords)
-
         for i in range(self.n ):
 
             end_point = [ self.coords[i][plane1_ind], self.coords[i][plane2_ind] ]
             joints.append(end_point)
 
-        print (joints)
 
-        ph.draw_robot(self.screen, joints)
-    
+        ph.draw_robot(screen, joints)
+
+
+    def inverse_kinematics(self, T, thetalist0 ):
+
+        Slist = self.screw
+        M = self.M
+        eomg = 0.01
+        ev = 0.01
+
+        thetalist = np.array(thetalist0).copy()
+
+        i = 0
+        maxiterations = 20
+
+        Tsb = FKinSpace(M,Slist, thetalist)
+
+        Vs = np.dot(Adjoint(Tsb), \
+                    se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
+        err = np.linalg.norm([Vs[0], Vs[1], Vs[2]]) > eomg \
+              or np.linalg.norm([Vs[3], Vs[4], Vs[5]]) > ev
+        while err and i < maxiterations:
+
+            thetalist = thetalist \
+                        + np.dot(np.linalg.pinv(JacobianSpace(Slist, \
+                                                              thetalist)), Vs)
+            i = i + 1
+            Tsb = FKinSpace(M, Slist, thetalist)
+
+            Vs = np.dot(Adjoint(Tsb), \
+                        se3ToVec(MatrixLog6(np.dot(TransInv(Tsb), T))))
+            eomg_c = np.linalg.norm([Vs[0], Vs[1], Vs[2]])
+            ev_c = np.linalg.norm([Vs[3], Vs[4], Vs[5]])
+            err = eomg_c > eomg or ev_c > ev
+
+
+        return (thetalist, not err)

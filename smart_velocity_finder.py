@@ -10,6 +10,15 @@ def test():
     plt.plot(y)
     plt.show()
 
+def add_to_front(new, old, limit = params.max_velocity_hist):
+
+    old.insert(0, new)
+    if len(old) > limit:
+        old = old[:limit]
+
+    return old
+
+
 def get_weights(n):
 
     ###Weights = [0.5, 0.25, 0.125, etc]
@@ -25,7 +34,7 @@ def find_velocity(time, pos, accel):
     #finds velocity based on historical time and position data
 
     ##[oldest, next oldest, newest]
-    vs = np.zeros(len(time)-1)
+    vs = np.zeros( len(time) - 1 )
     weights = get_weights(len(time) - 1)
 
     ###Calculate the velocity using the historical values of the position and time

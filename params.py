@@ -2,16 +2,12 @@ import time
 import numpy as np
 ###All dimensions in meters
 
-gravity = -9.81
+g = -9.81
 
-max_velocity_hist = 10
+max_velocity_hist = 20
 
 #BALL
-ball_base_x = 0
-ball_base_y = 0
-ball_base_z = 0
-ball_radius = .02
-
+ball_radius = 4
 ball_v0 = 10
 
 #for simulation only
@@ -81,8 +77,10 @@ width = 500
 pix_to_met = min(length, width) / 2 / (L1+L2+L3+L4)
 background_color = (0,0,0)
 joint_color = (255,255,255)
+ball_color = (255,255,0)
 joint_rad = 5
 dt = 60
+dt_sec = 1 / dt
 
 colors = [ (120,120,120), (120,120,120), (120,120,120), (0,0,255) ]
 joint_colors = [ (255,0,0),(255,0,0),(255,0,0),(255,0,0), (255,0,0)]
